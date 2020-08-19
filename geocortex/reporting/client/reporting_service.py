@@ -42,7 +42,7 @@ def _getServiceUrlFromPortalItem(portalItem: dict) -> str:
 
 
 def _getReportingTokenIfNeeded(token: str, portalItem, serviceUrl) -> str:
-    if token and portalItem.access != "public":
+    if token and portalItem["access"] != "public":
         json = {"accessToken": token}
         response = requests.post(serviceUrl + "/auth/token/run", json=json)
         response.raise_for_status()
@@ -116,7 +116,11 @@ async def _waitForJobResultWs(serviceUrl: str, ticket: str) -> str:
 
 
 async def runReport(
-    itemId: str, portalUrl="https://www.arcgis.com", token="", **kwargs,
+    itemId: str,
+    portalUrl="https://www.arcgis.com",
+    token="",
+    usePolling=False,
+    **kwargs,
 ):
     portalUrl = portalUrl.strip("/")
     portalItem = getPortalItem(itemId, portalUrl)
@@ -126,7 +130,7 @@ async def runReport(
     jobArgs = _buildJobArgs(itemId, portalUrl, kwargs)
     ticket = _startJob(serviceUrl, jobArgs, reportingToken)
 
-    if "usePolling" in kwargs and kwargs.get("usePolling") == True:
+    if usePolling == True:
         return _waitForJobResultHttp(serviceUrl, ticket)
     else:
         return await _waitForJobResultWs(serviceUrl, ticket)
