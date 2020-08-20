@@ -51,8 +51,13 @@ def _getReportingTokenIfNeeded(token: str, portalItem: dict, serviceUrl: str) ->
     return ""
 
 
-def _buildJobArgs(itemId: str, portalUrl: str, args: dict) -> dict:
-    parameters = []
+def _buildJobArgs(
+    itemId: str, portalUrl: str, args: dict, culture: str, dpi: int
+) -> dict:
+    jobArgs = {
+        "template": {"itemId": itemId, "portalUrl": portalUrl},
+        "parameters": [],
+    }
 
     for key, value in args.items():
         param = {"name": key}
@@ -64,12 +69,14 @@ def _buildJobArgs(itemId: str, portalUrl: str, args: dict) -> dict:
             param["containsMultipleValues"] = False
             param["value"] = value
 
-        parameters.append(param)
+        jobArgs["parameters"].append(param)
 
-    return {
-        "template": {"itemId": itemId, "portalUrl": portalUrl},
-        "parameters": parameters,
-    }
+    if culture:
+        jobArgs["culture"] = culture
+    if dpi:
+        jobArgs["dpi"] = dpi
+
+    return jobArgs
 
 
 def _startJob(serviceUrl: str, jobArgs: dict, token: str) -> str:
@@ -94,6 +101,7 @@ def _waitForJobResultHttp(serviceUrl: str, ticket: str) -> str:
         jobStatus = response.json()
         artifactUrl = _checkJobStatus(serviceUrl, ticket, jobStatus)
 
+        # TODO: Do we want to bail after retrying a certain number of times?
         if not artifactUrl:
             time.sleep(1)
 
@@ -114,19 +122,41 @@ async def _waitForJobResultWs(serviceUrl: str, ticket: str) -> str:
             return artifactUrl
 
 
-async def runReport(
+async def run(
     itemId: str,
     portalUrl="https://www.arcgis.com",
     token="",
+    culture="",
+    dpi=0,
     usePolling=False,
     **kwargs,
 ):
+    """Runs a report job and returns a URL to the report artifact.
+
+    Args:
+        itemId (str): The portal item ID of the Reporting or Printing item.
+        portalUrl (str, optional) The URL of the ArcGIS Portal instance to use. 
+            Defaults to `https://www.arcgis.com`.
+        token (str, optional) The Portal access token to be used to access secured resources. 
+            If not provided requests to secured resources will fail.
+        culture (str, optional) The culture to use for localization.
+        dpi (str) The DPI to use when rendering a map print. Defaults to `96`.
+        usePolling (bool) When `True`, the job service will be polled periodically for results. 
+            When `False`, connect to the job service using WebSockets to listen for results.
+            It's recommended to use WebSockets if possible. 
+            Defaults to `False`.
+        **kwargs: Other parameters to pass to the job. These are commonly used to parameterize your template.
+
+    Returns:
+        A URL to the report artifact.
+    """
+
     portalUrl = portalUrl.strip("/")
     portalItem = getPortalItem(itemId, portalUrl)
     serviceUrl = _getServiceUrlFromPortalItem(portalItem)
 
     reportingToken = _getReportingTokenIfNeeded(token, portalItem, serviceUrl)
-    jobArgs = _buildJobArgs(itemId, portalUrl, kwargs)
+    jobArgs = _buildJobArgs(itemId, portalUrl, kwargs, culture, dpi)
     ticket = _startJob(serviceUrl, jobArgs, reportingToken)
 
     if usePolling == True:

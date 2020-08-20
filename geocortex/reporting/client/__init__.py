@@ -1,4 +1,4 @@
-__all__ = ["runReport"]
+__all__ = ["run"]
 
-from .reporting_service import runReport
+from .reporting_service import run
 

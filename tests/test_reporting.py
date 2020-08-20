@@ -6,9 +6,7 @@ import websockets
 
 from unittest import mock
 
-from geocortex.reporting.client import runReport
-
-from collections.abc import Iterable
+from geocortex.reporting.client import run
 
 MOCK_PORTAL_ITEM_ID = "mock-portal-item-id"
 MOCK_PORTAL_TOKEN = "mock-portal-token"
@@ -61,7 +59,7 @@ class TestReporting(unittest.IsolatedAsyncioTestCase):
         with responses.RequestsMock() as rsps:
             setupDefaultResponses(rsps)
 
-            report = await runReport(MOCK_PORTAL_ITEM_ID, usePolling=True)
+            report = await run(MOCK_PORTAL_ITEM_ID, usePolling=True)
 
             self.assertEqual(
                 report,
@@ -84,7 +82,7 @@ class TestReporting(unittest.IsolatedAsyncioTestCase):
                 status=200,
             )
 
-            report = await runReport(
+            report = await run(
                 MOCK_PORTAL_ITEM_ID, usePolling=True, token=MOCK_PORTAL_TOKEN
             )
 
@@ -107,10 +105,9 @@ class TestReporting(unittest.IsolatedAsyncioTestCase):
         with responses.RequestsMock() as rsps:
             setupDefaultResponses(rsps)
 
-            await runReport(
+            await run(
                 MOCK_PORTAL_ITEM_ID,
                 usePolling=True,
-                token=MOCK_PORTAL_TOKEN,
                 # Following should be passed in job params
                 bool=True,
                 dict={"foo": "bar"},
@@ -163,12 +160,35 @@ class TestReporting(unittest.IsolatedAsyncioTestCase):
                 },
             )
 
+    async def test_passes_culture_as_job_arg(self):
+        with responses.RequestsMock() as rsps:
+            setupDefaultResponses(rsps)
+
+            await run(MOCK_PORTAL_ITEM_ID, usePolling=True, culture="fr-CA")
+
+            jobRunCall = next(
+                x
+                for x in rsps.calls
+                if x.request.url == f"{DEFAULT_REPORTING_URL}/service/job/run"
+            )
+            self.assertEqual(
+                json.loads(jobRunCall.request.body),
+                {
+                    "template": {
+                        "itemId": MOCK_PORTAL_ITEM_ID,
+                        "portalUrl": DEFAULT_PORTAL_URL,
+                    },
+                    "parameters": [],
+                    "culture": "fr-CA",
+                },
+            )
+
     async def test_uses_reporting_service_url(self):
         with responses.RequestsMock() as rsps:
             reportingUrl = "https://on-prem/reporting"
             setupDefaultResponses(rsps, reportingUrl=reportingUrl)
 
-            report = await runReport(MOCK_PORTAL_ITEM_ID, usePolling=True)
+            report = await run(MOCK_PORTAL_ITEM_ID, usePolling=True)
 
             self.assertEqual(
                 report,
@@ -180,7 +200,7 @@ class TestReporting(unittest.IsolatedAsyncioTestCase):
             portalUrl = "https://on-prem-portal"
             setupDefaultResponses(rsps, portalUrl=portalUrl)
 
-            report = await runReport(
+            report = await run(
                 MOCK_PORTAL_ITEM_ID, portalUrl=portalUrl, usePolling=True
             )
 
@@ -207,7 +227,7 @@ class TestReporting(unittest.IsolatedAsyncioTestCase):
             )
 
             with self.assertRaises(Exception) as cm:
-                await runReport(MOCK_PORTAL_ITEM_ID, usePolling=True)
+                await run(MOCK_PORTAL_ITEM_ID, usePolling=True)
 
             self.assertEqual(
                 str(cm.exception),
@@ -230,11 +250,36 @@ class TestReporting(unittest.IsolatedAsyncioTestCase):
             )
 
             with self.assertRaises(Exception,) as cm:
-                await runReport(MOCK_PORTAL_ITEM_ID, usePolling=True)
+                await run(MOCK_PORTAL_ITEM_ID, usePolling=True)
 
             self.assertEqual(
                 str(cm.exception),
                 f"Report job failed to produce an artifact. See the logs for more details: {DEFAULT_REPORTING_URL}/service/job/logs?ticket={MOCK_REPORT_TICKET}",
+            )
+
+
+class TestPrinting(unittest.IsolatedAsyncioTestCase):
+    async def test_passes_dpi_as_job_arg(self):
+        with responses.RequestsMock() as rsps:
+            setupDefaultResponses(rsps)
+
+            await run(MOCK_PORTAL_ITEM_ID, usePolling=True, dpi=42)
+
+            jobRunCall = next(
+                x
+                for x in rsps.calls
+                if x.request.url == f"{DEFAULT_REPORTING_URL}/service/job/run"
+            )
+            self.assertEqual(
+                json.loads(jobRunCall.request.body),
+                {
+                    "template": {
+                        "itemId": MOCK_PORTAL_ITEM_ID,
+                        "portalUrl": DEFAULT_PORTAL_URL,
+                    },
+                    "parameters": [],
+                    "dpi": 42,
+                },
             )
 
 

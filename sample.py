@@ -1,11 +1,11 @@
 import asyncio
-import geocortex.reporting
+
+
+from geocortex.reporting.client import run
 
 
 async def f():
-    reportUrl = await geocortex.reporting.runReport(
-        "eabbd585f8d44c09acb2986b1293f2f8", FeatureIds=[3903]
-    )
+    reportUrl = await run("eabbd585f8d44c09acb2986b1293f2f8", FeatureIds=[3903])
     print(reportUrl)
 
 
