@@ -33,7 +33,8 @@ def _getServiceUrlFromPortalItem(portalItem: dict) -> str:
     serviceUrl = portalItem.get("url", "")
     if not serviceUrl:
         # Fall back to the well-know SaaS URL.
-        serviceUrl = "https://apps.geocortex.com/reporting/"
+        serviceUrl = "https://apps.geocortex.com/reporting"
+
     # TODO: Do we need to do the fragment stripping as GXWF activity does?
 
     return serviceUrl.strip("/") + "/service"

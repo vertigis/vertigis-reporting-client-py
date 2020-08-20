@@ -15,8 +15,9 @@ def getPortalItem(itemId: str, portalUrl: str):
     response.raise_for_status()
     portalItem = response.json()
 
-    if hasattr(portalItem, "error"):
-        raise Exception(portalItem["error"])
+    if "error" in portalItem:
+        message = portalItem["error"]["message"]
+        raise Exception(f"Error retrieving portal item: {message}")
 
     return portalItem
 

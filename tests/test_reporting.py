@@ -1,4 +1,6 @@
+import json
 import requests
+import responses
 import unittest
 import websockets
 
@@ -15,198 +17,225 @@ MOCK_REPORTING_TOKEN = "mock-reporting-token"
 MOCK_REPORT_TICKET = "mock-report-ticket"
 MOCK_REPORT_TAG = "mock-report-tag"
 
-
-class MockResponse:
-    def __init__(self, url, json_data, status_code):
-        self.url = url
-        self.json_data = json_data
-        self.status_code = status_code
-
-    def raise_for_status(self):
-        http_error_msg = ""
-        if 400 <= self.status_code < 500:
-            http_error_msg = f"{self.status_code} Client Error for url: {self.url}"
-        elif 500 <= self.status_code < 600:
-            http_error_msg = f"{self.status_code} Server Error for url: {self.url}"
-
-        if http_error_msg:
-            raise requests.exceptions.HTTPError(http_error_msg)
-
-    def json(self):
-        return self.json_data
+DEFAULT_REPORTING_URL = "https://apps.geocortex.com/reporting"
+DEFAULT_PORTAL_URL = "https://www.arcgis.com"
 
 
-def mocked_request(defaultResponses, args, kwargs):
-    otherResponses = kwargs.get("responses", {})
-    responses = {**defaultResponses, **otherResponses}
+def setupDefaultResponses(
+    rsps, reportingUrl=DEFAULT_REPORTING_URL, portalUrl=DEFAULT_PORTAL_URL,
+):
+    rsps.add(
+        responses.GET,
+        f"{portalUrl}/sharing/rest/content/items/{MOCK_PORTAL_ITEM_ID}?f=json",
+        json={"access": "public", "url": f"{reportingUrl}/"},
+        status=200,
+    )
 
-    url = args[0]
-
-    matchingResponse = responses.get(url, None)
-    if matchingResponse:
-        return MockResponse(
-            url, matchingResponse["json"], matchingResponse["status_code"]
-        )
-
-    return MockResponse(url, None, 404)
-
-
-def get_mocked_requests_get(responses={}):
-    def mocked_requests_get(*args, **kwargs):
-        defaultResponses = {
-            f"https://www.arcgis.com/sharing/rest/content/items/{MOCK_PORTAL_ITEM_ID}?f=json": {
-                "json": {
-                    "access": "public",
-                    "url": "https://apps.geocortex.com/reporting/",
+    rsps.add(
+        responses.GET,
+        f"{reportingUrl}/service/job/artifacts?ticket={MOCK_REPORT_TICKET}",
+        json={
+            "results": [
+                {
+                    "$type": "JobResult",
+                    "contentType": "application/pdf",
+                    "tag": MOCK_REPORT_TAG,
+                    "length": 24003,
                 },
-                "status_code": 200,
-            },
-            f"https://apps.geocortex.com/reporting/service/job/artifacts?ticket={MOCK_REPORT_TICKET}": {
-                "json": {
-                    "results": [
-                        {
-                            "$type": "JobResult",
-                            "contentType": "application/pdf",
-                            "tag": MOCK_REPORT_TAG,
-                            "length": 24003,
-                        },
-                        {"$type": "JobQuit", "kind": "Run"},
-                    ],
-                },
-                "status_code": 200,
-            },
-        }
+                {"$type": "JobQuit", "kind": "Run"},
+            ],
+        },
+        status=200,
+    )
 
-        return mocked_request({**defaultResponses, **responses}, args, kwargs)
-
-    return mocked_requests_get
-
-
-def get_mocked_requests_post(responses={}):
-    def mocked_requests_post(*args, **kwargs):
-        defaultResponses = {
-            "https://apps.geocortex.com/reporting/service/job/run": {
-                "json": {
-                    "response": {"$type": "TokenResponse", "ticket": MOCK_REPORT_TICKET}
-                },
-                "status_code": 200,
-            },
-        }
-
-        return mocked_request({**defaultResponses, **responses}, args, kwargs)
-
-    return mocked_requests_post
-
-
-# def mocked_websockets_connect(*args, **kwargs):
-#     class MockWebsocketConnect
+    rsps.add(
+        responses.POST,
+        f"{reportingUrl}/service/job/run",
+        json={"response": {"$type": "TokenResponse", "ticket": MOCK_REPORT_TICKET}},
+        status=200,
+    )
 
 
 class TestReporting(unittest.IsolatedAsyncioTestCase):
-    @mock.patch("requests.get", side_effect=get_mocked_requests_get())
-    @mock.patch("requests.post", side_effect=get_mocked_requests_post())
-    async def test_basic(self, mock_post, mock_get):
-        report = await runReport(MOCK_PORTAL_ITEM_ID, usePolling=True)
+    async def test_basic(self):
+        with responses.RequestsMock() as rsps:
+            setupDefaultResponses(rsps)
 
-        self.assertEqual(
-            report,
-            f"https://apps.geocortex.com/reporting/service/job/result?ticket={MOCK_REPORT_TICKET}&tag={MOCK_REPORT_TAG}",
-        )
+            report = await runReport(MOCK_PORTAL_ITEM_ID, usePolling=True)
 
-    @mock.patch(
-        "requests.get",
-        side_effect=get_mocked_requests_get(
-            {
-                f"https://www.arcgis.com/sharing/rest/content/items/{MOCK_PORTAL_ITEM_ID}?f=json": {
-                    "json": {
-                        "access": "private",
-                        "url": "https://apps.geocortex.com/reporting/",
+            self.assertEqual(
+                report,
+                f"{DEFAULT_REPORTING_URL}/service/job/result?ticket={MOCK_REPORT_TICKET}&tag={MOCK_REPORT_TAG}",
+            )
+
+    async def test_with_token(self):
+        with responses.RequestsMock() as rsps:
+            setupDefaultResponses(rsps)
+            rsps.replace(
+                responses.GET,
+                f"{DEFAULT_PORTAL_URL}/sharing/rest/content/items/{MOCK_PORTAL_ITEM_ID}?f=json",
+                json={"access": "private", "url": f"{DEFAULT_REPORTING_URL}/",},
+                status=200,
+            )
+            rsps.add(
+                responses.POST,
+                f"{DEFAULT_REPORTING_URL}/service/auth/token/run",
+                json={"response": {"token": MOCK_REPORTING_TOKEN}},
+                status=200,
+            )
+
+            report = await runReport(
+                MOCK_PORTAL_ITEM_ID, usePolling=True, token=MOCK_PORTAL_TOKEN
+            )
+
+            self.assertEqual(
+                report,
+                f"{DEFAULT_REPORTING_URL}/service/job/result?ticket={MOCK_REPORT_TICKET}&tag={MOCK_REPORT_TAG}",
+            )
+            jobRunCall = next(
+                x
+                for x in rsps.calls
+                if x.request.url == f"{DEFAULT_REPORTING_URL}/service/job/run"
+            )
+            self.assertEqual(
+                jobRunCall.request.headers["Authorization"],
+                f"Bearer {MOCK_REPORTING_TOKEN}",
+                "Sends bearer token in job run request",
+            )
+
+    async def test_param_forwarding(self):
+        with responses.RequestsMock() as rsps:
+            setupDefaultResponses(rsps)
+
+            await runReport(
+                MOCK_PORTAL_ITEM_ID,
+                usePolling=True,
+                token=MOCK_PORTAL_TOKEN,
+                # Following should be passed in job params
+                bool=True,
+                dict={"foo": "bar"},
+                list=["foo", "bar"],
+                num=42,
+                str="foo",
+                tuple=(1, 2),
+            )
+
+            jobRunCall = next(
+                x
+                for x in rsps.calls
+                if x.request.url == f"{DEFAULT_REPORTING_URL}/service/job/run"
+            )
+            self.assertEqual(
+                json.loads(jobRunCall.request.body),
+                {
+                    "template": {
+                        "itemId": MOCK_PORTAL_ITEM_ID,
+                        "portalUrl": DEFAULT_PORTAL_URL,
                     },
-                    "status_code": 200,
-                }
-            }
-        ),
-    )
-    @mock.patch(
-        "requests.post",
-        side_effect=get_mocked_requests_post(
-            {
-                "https://apps.geocortex.com/reporting/service/auth/token/run": {
-                    "json": {"response": {"token": MOCK_REPORTING_TOKEN}},
-                    "status_code": 200,
-                }
-            }
-        ),
-    )
-    async def test_with_token(self, mock_post, mock_get):
-        report = await runReport(
-            MOCK_PORTAL_ITEM_ID, usePolling=True, token=MOCK_PORTAL_TOKEN
-        )
-
-        self.assertEqual(
-            report,
-            f"https://apps.geocortex.com/reporting/service/job/result?ticket={MOCK_REPORT_TICKET}&tag={MOCK_REPORT_TAG}",
-        )
-
-        # Provided a reporting token to the job run endpoint.
-        mock_post.assert_any_call(
-            "https://apps.geocortex.com/reporting/service/job/run",
-            headers={"Authorization": f"Bearer {MOCK_REPORTING_TOKEN}"},
-            json={
-                "template": {
-                    "itemId": MOCK_PORTAL_ITEM_ID,
-                    "portalUrl": "https://www.arcgis.com",
+                    "parameters": [
+                        {
+                            "name": "bool",
+                            "containsMultipleValues": False,
+                            "value": True,
+                        },
+                        {
+                            "name": "dict",
+                            "containsMultipleValues": False,
+                            "value": {"foo": "bar"},
+                        },
+                        {
+                            "name": "list",
+                            "containsMultipleValues": True,
+                            "values": ["foo", "bar"],
+                        },
+                        {"name": "num", "containsMultipleValues": False, "value": 42,},
+                        {
+                            "name": "str",
+                            "containsMultipleValues": False,
+                            "value": "foo",
+                        },
+                        {
+                            "name": "tuple",
+                            "containsMultipleValues": True,
+                            "values": [1, 2],
+                        },
+                    ],
                 },
-                "parameters": [],
-            },
-        )
+            )
 
-    @mock.patch("requests.get", side_effect=get_mocked_requests_get())
-    @mock.patch("requests.post", side_effect=get_mocked_requests_post())
-    async def test_param_forwarding(self, mock_post, mock_get):
-        await runReport(
-            MOCK_PORTAL_ITEM_ID,
-            usePolling=True,
-            token=MOCK_PORTAL_TOKEN,
-            # Following should be passed in job params
-            bool=True,
-            dict={"foo": "bar"},
-            str="foo",
-            list=["foo", "bar"],
-            num=42,
-            tuple=(1, 2),
-        )
+    async def test_uses_reporting_service_url(self):
+        with responses.RequestsMock() as rsps:
+            reportingUrl = "https://on-prem/reporting"
+            setupDefaultResponses(rsps, reportingUrl=reportingUrl)
 
-        mock_post.assert_any_call(
-            "https://apps.geocortex.com/reporting/service/job/run",
-            headers={},
-            json={
-                "template": {
-                    "itemId": MOCK_PORTAL_ITEM_ID,
-                    "portalUrl": "https://www.arcgis.com",
+            report = await runReport(MOCK_PORTAL_ITEM_ID, usePolling=True)
+
+            self.assertEqual(
+                report,
+                f"{reportingUrl}/service/job/result?ticket={MOCK_REPORT_TICKET}&tag={MOCK_REPORT_TAG}",
+            )
+
+    async def test_uses_portal_url(self):
+        with responses.RequestsMock() as rsps:
+            portalUrl = "https://on-prem-portal"
+            setupDefaultResponses(rsps, portalUrl=portalUrl)
+
+            report = await runReport(
+                MOCK_PORTAL_ITEM_ID, portalUrl=portalUrl, usePolling=True
+            )
+
+            self.assertEqual(
+                report,
+                f"{DEFAULT_REPORTING_URL}/service/job/result?ticket={MOCK_REPORT_TICKET}&tag={MOCK_REPORT_TAG}",
+            )
+
+    async def test_raises_when_portal_item_not_found(self):
+        with responses.RequestsMock(assert_all_requests_are_fired=False) as rsps:
+            setupDefaultResponses(rsps)
+            rsps.replace(
+                responses.GET,
+                f"{DEFAULT_PORTAL_URL}/sharing/rest/content/items/{MOCK_PORTAL_ITEM_ID}?f=json",
+                json={
+                    "error": {
+                        "code": 400,
+                        "messageCode": "CONT_0001",
+                        "message": "Item does not exist or is inaccessible.",
+                        "details": [],
+                    }
                 },
-                "parameters": [
-                    {"name": "bool", "containsMultipleValues": False, "value": True},
-                    {
-                        "name": "dict",
-                        "containsMultipleValues": False,
-                        "value": {"foo": "bar"},
-                    },
-                    {"name": "str", "containsMultipleValues": False, "value": "foo"},
-                    {
-                        "name": "list",
-                        "containsMultipleValues": True,
-                        "values": ["foo", "bar"],
-                    },
-                    {"name": "num", "containsMultipleValues": False, "value": 42,},
-                    {
-                        "name": "tuple",
-                        "containsMultipleValues": True,
-                        "values": (1, 2),
-                    },
-                ],
-            },
-        )
+                status=200,
+            )
+
+            with self.assertRaises(Exception) as cm:
+                await runReport(MOCK_PORTAL_ITEM_ID, usePolling=True)
+
+            self.assertEqual(
+                str(cm.exception),
+                "Error retrieving portal item: Item does not exist or is inaccessible.",
+            )
+
+    async def test_raises_when_job_finishes_without_artifact(self):
+        with responses.RequestsMock(assert_all_requests_are_fired=False) as rsps:
+            setupDefaultResponses(rsps)
+            rsps.replace(
+                responses.GET,
+                f"{DEFAULT_REPORTING_URL}/service/job/artifacts?ticket={MOCK_REPORT_TICKET}",
+                json={
+                    "results": [
+                        # 'JobResult' is missing from results
+                        {"$type": "JobQuit", "kind": "Run"},
+                    ],
+                },
+                status=200,
+            )
+
+            with self.assertRaises(Exception,) as cm:
+                await runReport(MOCK_PORTAL_ITEM_ID, usePolling=True)
+
+            self.assertEqual(
+                str(cm.exception),
+                f"Report job failed to produce an artifact. See the logs for more details: {DEFAULT_REPORTING_URL}/service/job/logs?ticket={MOCK_REPORT_TICKET}",
+            )
 
 
 if __name__ == "__main__":
