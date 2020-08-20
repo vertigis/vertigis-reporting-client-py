@@ -13,11 +13,11 @@ from setuptools import find_packages, setup, Command
 
 # Package meta-data.
 NAME = "geocortex-reporting-client"
-DESCRIPTION = "My short description for my project."
-URL = "https://github.com/me/myproject"
-EMAIL = "me@example.com"
-AUTHOR = "Awesome Soul"
-REQUIRES_PYTHON = ">=3.6.0"
+DESCRIPTION = "A Python client for running Geocortex Reporting jobs."
+URL = "https://github.com/geocortex/geocortex-reporting-client-py"
+EMAIL = "packages@geocortex.com"
+AUTHOR = "VertiGIS"
+REQUIRES_PYTHON = ">=3.8.0"
 VERSION = "0.1.0"
 
 # What packages are required for this module to be executed?
@@ -112,12 +112,17 @@ setup(
     classifiers=[
         # Trove classifiers
         # Full list: https://pypi.python.org/pypi?%3Aaction=list_classifiers
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
+        "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: Implementation :: CPython",
-        "Programming Language :: Python :: Implementation :: PyPy",
+        "Programming Language :: Python :: 3.8",
+        "Topic :: Scientific/Engineering :: GIS",
+        "Topic :: Scientific/Engineering :: Information Analysis",
+        "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     # $ setup.py publish support.
     cmdclass={"upload": UploadCommand,},

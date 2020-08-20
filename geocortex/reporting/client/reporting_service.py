@@ -4,12 +4,10 @@ import time
 import typing
 import websockets
 
-from collections.abc import Iterable
-
 from .portal_utils import getPortalItem
 
 
-def _checkJobStatus(serviceUrl: str, ticket: str, jobStatus: dict):
+def _checkJobStatus(serviceUrl: str, ticket: str, jobStatus: dict) -> str:
     jobResults = jobStatus.get("results", None)
 
     # If there's a 'JobQuit' result we know the job is done
@@ -41,7 +39,7 @@ def _getServiceUrlFromPortalItem(portalItem: dict) -> str:
     return serviceUrl.strip("/") + "/service"
 
 
-def _getReportingTokenIfNeeded(token: str, portalItem, serviceUrl) -> str:
+def _getReportingTokenIfNeeded(token: str, portalItem: dict, serviceUrl: str) -> str:
     if token and portalItem["access"] != "public":
         json = {"accessToken": token}
         response = requests.post(serviceUrl + "/auth/token/run", json=json)
@@ -52,13 +50,13 @@ def _getReportingTokenIfNeeded(token: str, portalItem, serviceUrl) -> str:
     return ""
 
 
-def _buildJobArgs(itemId: str, portalUrl: str, args: dict):
+def _buildJobArgs(itemId: str, portalUrl: str, args: dict) -> dict:
     parameters = []
 
     for key, value in args.items():
         param = {"name": key}
 
-        if isinstance(value, Iterable):
+        if type(value) in [list, tuple]:
             param["containsMultipleValues"] = True
             param["values"] = value
         else:

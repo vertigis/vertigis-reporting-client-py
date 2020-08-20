@@ -6,12 +6,14 @@ from unittest import mock
 
 from geocortex.reporting.client import runReport
 
-MOCK_PORTAL_ITEM_ID = "mock-item-id"
+from collections.abc import Iterable
+
+MOCK_PORTAL_ITEM_ID = "mock-portal-item-id"
 MOCK_PORTAL_TOKEN = "mock-portal-token"
 
 MOCK_REPORTING_TOKEN = "mock-reporting-token"
-MOCK_REPORT_TICKET = "mock-ticket"
-MOCK_REPORT_TAG = "mock-tag"
+MOCK_REPORT_TICKET = "mock-report-ticket"
+MOCK_REPORT_TAG = "mock-report-tag"
 
 
 class MockResponse:
@@ -84,7 +86,9 @@ def get_mocked_requests_post(responses={}):
     def mocked_requests_post(*args, **kwargs):
         defaultResponses = {
             "https://apps.geocortex.com/reporting/service/job/run": {
-                "json": {"response": {"$type": "TokenResponse", "ticket": MOCK_REPORT_TICKET}},
+                "json": {
+                    "response": {"$type": "TokenResponse", "ticket": MOCK_REPORT_TICKET}
+                },
                 "status_code": 200,
             },
         }
@@ -154,6 +158,53 @@ class TestReporting(unittest.IsolatedAsyncioTestCase):
                     "portalUrl": "https://www.arcgis.com",
                 },
                 "parameters": [],
+            },
+        )
+
+    @mock.patch("requests.get", side_effect=get_mocked_requests_get())
+    @mock.patch("requests.post", side_effect=get_mocked_requests_post())
+    async def test_param_forwarding(self, mock_post, mock_get):
+        await runReport(
+            MOCK_PORTAL_ITEM_ID,
+            usePolling=True,
+            token=MOCK_PORTAL_TOKEN,
+            # Following should be passed in job params
+            bool=True,
+            dict={"foo": "bar"},
+            str="foo",
+            list=["foo", "bar"],
+            num=42,
+            tuple=(1, 2),
+        )
+
+        mock_post.assert_any_call(
+            "https://apps.geocortex.com/reporting/service/job/run",
+            headers={},
+            json={
+                "template": {
+                    "itemId": MOCK_PORTAL_ITEM_ID,
+                    "portalUrl": "https://www.arcgis.com",
+                },
+                "parameters": [
+                    {"name": "bool", "containsMultipleValues": False, "value": True},
+                    {
+                        "name": "dict",
+                        "containsMultipleValues": False,
+                        "value": {"foo": "bar"},
+                    },
+                    {"name": "str", "containsMultipleValues": False, "value": "foo"},
+                    {
+                        "name": "list",
+                        "containsMultipleValues": True,
+                        "values": ["foo", "bar"],
+                    },
+                    {"name": "num", "containsMultipleValues": False, "value": 42,},
+                    {
+                        "name": "tuple",
+                        "containsMultipleValues": True,
+                        "values": (1, 2),
+                    },
+                ],
             },
         )
 
