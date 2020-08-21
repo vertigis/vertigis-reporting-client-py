@@ -1,10 +1,8 @@
-import json
-import requests
-import responses
-import unittest
-import websockets
+# pylint: disable=line-too-long,missing-class-docstring,missing-function-docstring
 
-from unittest import mock
+import json
+import unittest
+import responses
 
 from geocortex.reporting.client import run
 
@@ -19,19 +17,19 @@ DEFAULT_REPORTING_URL = "https://apps.geocortex.com/reporting"
 DEFAULT_PORTAL_URL = "https://www.arcgis.com"
 
 
-def setupDefaultResponses(
-    rsps, reportingUrl=DEFAULT_REPORTING_URL, portalUrl=DEFAULT_PORTAL_URL,
+def setup_default_responses(
+    rsps, *, reporting_url=DEFAULT_REPORTING_URL, portal_url=DEFAULT_PORTAL_URL,
 ):
     rsps.add(
         responses.GET,
-        f"{portalUrl}/sharing/rest/content/items/{MOCK_PORTAL_ITEM_ID}?f=json",
-        json={"access": "public", "url": f"{reportingUrl}/"},
+        f"{portal_url}/sharing/rest/content/items/{MOCK_PORTAL_ITEM_ID}?f=json",
+        json={"access": "public", "url": f"{reporting_url}/"},
         status=200,
     )
 
     rsps.add(
         responses.GET,
-        f"{reportingUrl}/service/job/artifacts?ticket={MOCK_REPORT_TICKET}",
+        f"{reporting_url}/service/job/artifacts?ticket={MOCK_REPORT_TICKET}",
         json={
             "results": [
                 {
@@ -48,7 +46,7 @@ def setupDefaultResponses(
 
     rsps.add(
         responses.POST,
-        f"{reportingUrl}/service/job/run",
+        f"{reporting_url}/service/job/run",
         json={"response": {"$type": "TokenResponse", "ticket": MOCK_REPORT_TICKET}},
         status=200,
     )
@@ -57,9 +55,9 @@ def setupDefaultResponses(
 class TestReporting(unittest.IsolatedAsyncioTestCase):
     async def test_basic(self):
         with responses.RequestsMock() as rsps:
-            setupDefaultResponses(rsps)
+            setup_default_responses(rsps)
 
-            report = await run(MOCK_PORTAL_ITEM_ID, usePolling=True)
+            report = await run(MOCK_PORTAL_ITEM_ID, use_polling=True)
 
             self.assertEqual(
                 report,
@@ -68,7 +66,7 @@ class TestReporting(unittest.IsolatedAsyncioTestCase):
 
     async def test_with_token(self):
         with responses.RequestsMock() as rsps:
-            setupDefaultResponses(rsps)
+            setup_default_responses(rsps)
             rsps.replace(
                 responses.GET,
                 f"{DEFAULT_PORTAL_URL}/sharing/rest/content/items/{MOCK_PORTAL_ITEM_ID}?f=json",
@@ -83,31 +81,31 @@ class TestReporting(unittest.IsolatedAsyncioTestCase):
             )
 
             report = await run(
-                MOCK_PORTAL_ITEM_ID, usePolling=True, token=MOCK_PORTAL_TOKEN
+                MOCK_PORTAL_ITEM_ID, use_polling=True, token=MOCK_PORTAL_TOKEN
             )
 
             self.assertEqual(
                 report,
                 f"{DEFAULT_REPORTING_URL}/service/job/result?ticket={MOCK_REPORT_TICKET}&tag={MOCK_REPORT_TAG}",
             )
-            jobRunCall = next(
+            job_run_call = next(
                 x
                 for x in rsps.calls
                 if x.request.url == f"{DEFAULT_REPORTING_URL}/service/job/run"
             )
             self.assertEqual(
-                jobRunCall.request.headers["Authorization"],
+                job_run_call.request.headers["Authorization"],
                 f"Bearer {MOCK_REPORTING_TOKEN}",
                 "Sends bearer token in job run request",
             )
 
     async def test_param_forwarding(self):
         with responses.RequestsMock() as rsps:
-            setupDefaultResponses(rsps)
+            setup_default_responses(rsps)
 
             await run(
                 MOCK_PORTAL_ITEM_ID,
-                usePolling=True,
+                use_polling=True,
                 # Following should be passed in job params
                 bool=True,
                 dict={"foo": "bar"},
@@ -117,13 +115,13 @@ class TestReporting(unittest.IsolatedAsyncioTestCase):
                 tuple=(1, 2),
             )
 
-            jobRunCall = next(
+            job_run_call = next(
                 x
                 for x in rsps.calls
                 if x.request.url == f"{DEFAULT_REPORTING_URL}/service/job/run"
             )
             self.assertEqual(
-                json.loads(jobRunCall.request.body),
+                json.loads(job_run_call.request.body),
                 {
                     "template": {
                         "itemId": MOCK_PORTAL_ITEM_ID,
@@ -162,17 +160,17 @@ class TestReporting(unittest.IsolatedAsyncioTestCase):
 
     async def test_passes_culture_as_job_arg(self):
         with responses.RequestsMock() as rsps:
-            setupDefaultResponses(rsps)
+            setup_default_responses(rsps)
 
-            await run(MOCK_PORTAL_ITEM_ID, usePolling=True, culture="fr-CA")
+            await run(MOCK_PORTAL_ITEM_ID, use_polling=True, culture="fr-CA")
 
-            jobRunCall = next(
+            job_run_call = next(
                 x
                 for x in rsps.calls
                 if x.request.url == f"{DEFAULT_REPORTING_URL}/service/job/run"
             )
             self.assertEqual(
-                json.loads(jobRunCall.request.body),
+                json.loads(job_run_call.request.body),
                 {
                     "template": {
                         "itemId": MOCK_PORTAL_ITEM_ID,
@@ -185,23 +183,23 @@ class TestReporting(unittest.IsolatedAsyncioTestCase):
 
     async def test_uses_reporting_service_url(self):
         with responses.RequestsMock() as rsps:
-            reportingUrl = "https://on-prem/reporting"
-            setupDefaultResponses(rsps, reportingUrl=reportingUrl)
+            reporting_url = "https://on-prem/reporting"
+            setup_default_responses(rsps, reporting_url=reporting_url)
 
-            report = await run(MOCK_PORTAL_ITEM_ID, usePolling=True)
+            report = await run(MOCK_PORTAL_ITEM_ID, use_polling=True)
 
             self.assertEqual(
                 report,
-                f"{reportingUrl}/service/job/result?ticket={MOCK_REPORT_TICKET}&tag={MOCK_REPORT_TAG}",
+                f"{reporting_url}/service/job/result?ticket={MOCK_REPORT_TICKET}&tag={MOCK_REPORT_TAG}",
             )
 
     async def test_uses_portal_url(self):
         with responses.RequestsMock() as rsps:
-            portalUrl = "https://on-prem-portal"
-            setupDefaultResponses(rsps, portalUrl=portalUrl)
+            portal_url = "https://on-prem-portal"
+            setup_default_responses(rsps, portal_url=portal_url)
 
             report = await run(
-                MOCK_PORTAL_ITEM_ID, portalUrl=portalUrl, usePolling=True
+                MOCK_PORTAL_ITEM_ID, portal_url=portal_url, use_polling=True
             )
 
             self.assertEqual(
@@ -211,7 +209,7 @@ class TestReporting(unittest.IsolatedAsyncioTestCase):
 
     async def test_raises_when_portal_item_not_found(self):
         with responses.RequestsMock(assert_all_requests_are_fired=False) as rsps:
-            setupDefaultResponses(rsps)
+            setup_default_responses(rsps)
             rsps.replace(
                 responses.GET,
                 f"{DEFAULT_PORTAL_URL}/sharing/rest/content/items/{MOCK_PORTAL_ITEM_ID}?f=json",
@@ -226,17 +224,17 @@ class TestReporting(unittest.IsolatedAsyncioTestCase):
                 status=200,
             )
 
-            with self.assertRaises(Exception) as cm:
-                await run(MOCK_PORTAL_ITEM_ID, usePolling=True)
+            with self.assertRaises(Exception) as context_manager:
+                await run(MOCK_PORTAL_ITEM_ID, use_polling=True)
 
             self.assertEqual(
-                str(cm.exception),
+                str(context_manager.exception),
                 "Error retrieving portal item: Item does not exist or is inaccessible.",
             )
 
     async def test_raises_when_job_finishes_without_artifact(self):
         with responses.RequestsMock(assert_all_requests_are_fired=False) as rsps:
-            setupDefaultResponses(rsps)
+            setup_default_responses(rsps)
             rsps.replace(
                 responses.GET,
                 f"{DEFAULT_REPORTING_URL}/service/job/artifacts?ticket={MOCK_REPORT_TICKET}",
@@ -249,11 +247,11 @@ class TestReporting(unittest.IsolatedAsyncioTestCase):
                 status=200,
             )
 
-            with self.assertRaises(Exception,) as cm:
-                await run(MOCK_PORTAL_ITEM_ID, usePolling=True)
+            with self.assertRaises(Exception,) as context_manager:
+                await run(MOCK_PORTAL_ITEM_ID, use_polling=True)
 
             self.assertEqual(
-                str(cm.exception),
+                str(context_manager.exception),
                 f"Report job failed to produce an artifact. See the logs for more details: {DEFAULT_REPORTING_URL}/service/job/logs?ticket={MOCK_REPORT_TICKET}",
             )
 
@@ -261,17 +259,17 @@ class TestReporting(unittest.IsolatedAsyncioTestCase):
 class TestPrinting(unittest.IsolatedAsyncioTestCase):
     async def test_passes_dpi_as_job_arg(self):
         with responses.RequestsMock() as rsps:
-            setupDefaultResponses(rsps)
+            setup_default_responses(rsps)
 
-            await run(MOCK_PORTAL_ITEM_ID, usePolling=True, dpi=42)
+            await run(MOCK_PORTAL_ITEM_ID, use_polling=True, dpi=42)
 
-            jobRunCall = next(
+            job_run_call = next(
                 x
                 for x in rsps.calls
                 if x.request.url == f"{DEFAULT_REPORTING_URL}/service/job/run"
             )
             self.assertEqual(
-                json.loads(jobRunCall.request.body),
+                json.loads(job_run_call.request.body),
                 {
                     "template": {
                         "itemId": MOCK_PORTAL_ITEM_ID,
