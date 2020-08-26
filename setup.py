@@ -15,19 +15,14 @@ DESCRIPTION = "A Python client for running Geocortex Reporting jobs."
 URL = "https://github.com/geocortex/geocortex-reporting-client-py"
 EMAIL = "packages@geocortex.com"
 AUTHOR = "VertiGIS"
-REQUIRES_PYTHON = ">=3.8.0"
-VERSION = "0.1.0"
+REQUIRES_PYTHON = ">=3.6.0"
+VERSION = "0.1.1"
 
 # What packages are required for this module to be executed?
 REQUIRED = ["requests>=2.24.0,<3", "websockets>=8.1,<9"]
 
 # What packages are optional?
-DEV_EXTRAS = ["black>=19.10b", "pylint>=2.5.3,<3", "responses>=0.10.16,<0.11"]
-
-# The rest you shouldn't have to touch too much :)
-# ------------------------------------------------
-# Except, perhaps the License and Trove Classifiers!
-# If you do change the License, remember to change the Trove Classifier for that!
+DEV_EXTRAS = ["aiounittest>=1.4.0,<2", "black>=19.10b", "pylint>=2.5.3,<3", "responses>=0.10.16,<0.11"]
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -74,6 +69,8 @@ setup(
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Topic :: Scientific/Engineering :: GIS",
         "Topic :: Scientific/Engineering :: Information Analysis",

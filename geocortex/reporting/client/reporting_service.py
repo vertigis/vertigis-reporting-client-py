@@ -144,7 +144,7 @@ async def run(
         token (str, optional) The Portal access token to be used to access secured resources.
             If not provided requests to secured resources will fail.
         culture (str, optional) The culture to use for localization.
-        dpi (str) The DPI to use when rendering a map print. Defaults to `96`.
+        dpi (int) The DPI to use when rendering a map print. Defaults to `96`.
         use_polling (bool) When `True`, the job service will be polled periodically for results.
             When `False`, connect to the job service using WebSockets to listen for results.
             It's recommended to use WebSockets if possible.

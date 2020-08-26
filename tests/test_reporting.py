@@ -2,6 +2,8 @@
 
 import json
 import unittest
+# Swap for unittest.IsolatedAsyncioTestCase if we drop Python < 3.8
+import aiounittest
 import responses
 
 from geocortex.reporting.client import run
@@ -52,7 +54,7 @@ def setup_default_responses(
     )
 
 
-class TestReporting(unittest.IsolatedAsyncioTestCase):
+class TestReporting(aiounittest.AsyncTestCase):
     async def test_basic(self):
         with responses.RequestsMock() as rsps:
             setup_default_responses(rsps)
@@ -256,7 +258,7 @@ class TestReporting(unittest.IsolatedAsyncioTestCase):
             )
 
 
-class TestPrinting(unittest.IsolatedAsyncioTestCase):
+class TestPrinting(aiounittest.AsyncTestCase):
     async def test_passes_dpi_as_job_arg(self):
         with responses.RequestsMock() as rsps:
             setup_default_responses(rsps)
