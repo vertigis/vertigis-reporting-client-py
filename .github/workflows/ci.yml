@@ -29,6 +29,9 @@ jobs:
       - name: Lint
         run: pylint geocortex tests
 
+      - name: Test
+        run: python -m unittest discover -s tests -p "test_*.py"
+
   release:
     runs-on: ubuntu-latest
     needs:
