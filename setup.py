@@ -22,7 +22,7 @@ VERSION = "0.1.1"
 REQUIRED = ["requests>=2.24.0,<3", "websockets>=8.1,<9"]
 
 # What packages are optional?
-DEV_EXTRAS = ["black>=19.10b", "pylint>=2.5.3,<3", "responses>=0.10.16,<0.11"]
+DEV_EXTRAS = ["aiounittest>=1.4.0,<2", "black>=19.10b", "pylint>=2.5.3,<3", "responses>=0.10.16,<0.11"]
 
 here = os.path.abspath(os.path.dirname(__file__))
 
