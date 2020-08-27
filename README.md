@@ -1,6 +1,6 @@
 # Geocortex Reporting Client for Python
 
-![CI/CD](https://github.com/geocortex/geocortex-reporting-client-py/workflows/CI/CD/badge.svg)
+![CI](https://github.com/geocortex/geocortex-reporting-client-py/workflows/CI/badge.svg) [![PyPI version](https://badge.fury.io/py/geocortex-reporting-client.svg)](https://badge.fury.io/py/geocortex-reporting-client)
 
 This Python library makes it easy to run [Geocortex Reporting](https://www.geocortex.com/products/geocortex-reporting/) or [Geocortex Printing](https://www.geocortex.com/products/geocortex-printing/) jobs.
 
