@@ -1,6 +1,6 @@
 # Geocortex Reporting Client for Python
 
-![CI](https://github.com/geocortex/geocortex-reporting-client-py/workflows/CI/badge.svg) [![PyPI version](https://badge.fury.io/py/geocortex-reporting-client.svg)](https://badge.fury.io/py/geocortex-reporting-client)
+![CI](https://github.com/geocortex/geocortex-reporting-client-py/workflows/CI/badge.svg) ![PyPI](https://img.shields.io/pypi/v/geocortex-reporting-client)
 
 This Python library makes it easy to run [Geocortex Reporting](https://www.geocortex.com/products/geocortex-reporting/) or [Geocortex Printing](https://www.geocortex.com/products/geocortex-printing/) jobs.
 
@@ -36,4 +36,4 @@ url = await run("itemid", [... other arguments])
 | culture        | str  | The culture to use for localization. For example `"en-US"`.                                                                                                                                                                    |
 | dpi            | int  | The DPI to use when rendering a map print. Defaults to `96`.                                                                                                                                                                   |
 | use_polling    | bool | When `True`, the job service will be polled periodically for results. When `False`, connect to the job service using WebSockets to listen for results. It's recommended to use WebSockets where possible. Defaults to `False`. |
-| \*\*kwargs\*\* | any  | Other parameters to pass to the job. These are commonly used to parameterize your template. For example `run("itemid", FeatureIds=[1, 2, 3])`                                                                              |
+| \*\*kwargs\*\* | any  | Other parameters to pass to the job. These are commonly used to parameterize your template. For example `run("itemid", FeatureIds=[1, 2, 3])`                                                                                  |
