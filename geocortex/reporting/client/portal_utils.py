@@ -7,7 +7,9 @@ def _get_portal_rest_url(portal_url: str) -> str:
 
 def _get_portal_item_url(item_id: str, portal_url: str, token: str) -> str:
     url = f"{_get_portal_rest_url(portal_url)}/content/items/{item_id}?f=json"
-    url = url if token is None else f"{url}&token={token}"
+
+    if token:
+        url = f"{url}&token={token}" 
 
     return url
 
