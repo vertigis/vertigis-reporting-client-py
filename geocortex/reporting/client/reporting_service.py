@@ -42,10 +42,10 @@ def _get_service_url_from_portal_item(portal_item: dict) -> str:
 
 
 def _get_reporting_token_if_needed(
-    token: str, portal_item: dict, service_url: str
+    token: str, portal_item: dict, service_url: str, portal_url: str
 ) -> str:
     if token and portal_item["access"] != "public":
-        token_args = {"accessToken": token}
+        token_args = {"accessToken": token, "portalUrl": portal_url}
         response = requests.post(service_url + "/auth/token/run", json=token_args)
         response.raise_for_status()
         response_json = response.json()
@@ -157,10 +157,10 @@ async def run(
     """
 
     portal_url = portal_url.strip("/")
-    portal_item = get_portal_item(item_id, portal_url)
+    portal_item = get_portal_item(item_id, portal_url, token)
     service_url = _get_service_url_from_portal_item(portal_item)
 
-    reporting_token = _get_reporting_token_if_needed(token, portal_item, service_url)
+    reporting_token = _get_reporting_token_if_needed(token, portal_item, service_url, portal_url)
     job_args = _build_job_args(item_id, portal_url, kwargs, culture, dpi)
     ticket = _start_job(service_url, job_args, reporting_token)
 

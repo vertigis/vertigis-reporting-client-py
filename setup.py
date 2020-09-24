@@ -16,7 +16,7 @@ URL = "https://github.com/geocortex/geocortex-reporting-client-py"
 EMAIL = "packages@geocortex.com"
 AUTHOR = "VertiGIS"
 REQUIRES_PYTHON = ">=3.6.0"
-VERSION = "0.1.2"
+VERSION = "0.1.3"
 
 # What packages are required for this module to be executed?
 REQUIRED = ["requests>=2.24.0,<3", "websockets>=8.1,<9"]
