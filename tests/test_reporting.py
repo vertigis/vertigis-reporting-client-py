@@ -69,9 +69,13 @@ class TestReporting(aiounittest.AsyncTestCase):
     async def test_with_token(self):
         with responses.RequestsMock() as rsps:
             setup_default_responses(rsps)
-            rsps.replace(
+            rsps.remove(
                 responses.GET,
                 f"{DEFAULT_PORTAL_URL}/sharing/rest/content/items/{MOCK_PORTAL_ITEM_ID}?f=json",
+            )
+            rsps.add(
+                responses.GET,
+                f"{DEFAULT_PORTAL_URL}/sharing/rest/content/items/{MOCK_PORTAL_ITEM_ID}?f=json&token={MOCK_PORTAL_TOKEN}",
                 json={"access": "private", "url": f"{DEFAULT_REPORTING_URL}/",},
                 status=200,
             )
