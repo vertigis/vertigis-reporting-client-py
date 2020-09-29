@@ -139,13 +139,13 @@ async def run(
 
     Args:
         item_id (str): The portal item ID of the Reporting or Printing item.
-        portal_url (str, optional) The URL of the ArcGIS Portal instance to use.
+        portal_url (str, optional): The URL of the ArcGIS Portal instance to use.
             Defaults to `https://www.arcgis.com`.
-        token (str, optional) The Portal access token to be used to access secured resources.
+        token (str, optional): The Portal access token to be used to access secured resources.
             If not provided requests to secured resources will fail.
-        culture (str, optional) The culture to use for localization.
-        dpi (int, optional) The DPI to use when rendering a map print. Defaults to `96`.
-        use_polling (bool, optional) When `True`, the job service will be polled periodically for results.
+        culture (str, optional): The culture to use for localization.
+        dpi (int, optional): The DPI to use when rendering a map print. Defaults to `96`.
+        use_polling (bool, optional): When `True`, the job service will be polled periodically for results.
             When `False`, connect to the job service using WebSockets to listen for results.
             It's recommended to use WebSockets if possible.
             Defaults to `False`.
@@ -153,7 +153,7 @@ async def run(
             These are commonly used to parameterize your template.
 
     Returns:
-        A URL to the report artifact.
+        A string of the URL to the report artifact.
     """
 
     portal_url = portal_url.strip("/")
