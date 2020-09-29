@@ -37,3 +37,7 @@ url = await run("itemid", [... other arguments])
 | dpi            | int  | The DPI to use when rendering a map print. Defaults to `96`.                                                                                                                                                                   |
 | use_polling    | bool | When `True`, the job service will be polled periodically for results. When `False`, connect to the job service using WebSockets to listen for results. It's recommended to use WebSockets where possible. Defaults to `False`. |
 | \*\*kwargs\*\* | any  | Other parameters to pass to the job. These are commonly used to parameterize your template. For example `run("itemid", FeatureIds=[1, 2, 3])`                                                                                  |
+
+## Documentation
+
+Find [further documentation on the SDK](https://developers.geocortex.com/docs/reporting/sdk-overview/) on the [Geocortex Developer Center](https://developers.geocortex.com/docs/reporting/overview/)
