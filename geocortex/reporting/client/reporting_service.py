@@ -19,7 +19,7 @@ def _check_job_status(service_url: str, ticket: str, job_status: dict) -> str:
         if not job_result:
             logs_url = f"{service_url}/job/logs?ticket={ticket}"
             raise Exception(
-                f"Report job failed to produce an artifact. See the logs for more details: {logs_url}" # pylint: disable=line-too-long
+                f"Report job failed to produce an artifact. See the logs for more details: {logs_url}"  # pylint: disable=line-too-long
             )
 
         tag = job_result["tag"]
@@ -139,28 +139,29 @@ async def run(
 
     Args:
         item_id (str): The portal item ID of the Reporting or Printing item.
-        portal_url (str, optional) The URL of the ArcGIS Portal instance to use.
+        portal_url (str, optional): The URL of the ArcGIS Portal instance to use.
             Defaults to `https://www.arcgis.com`.
-        token (str, optional) The Portal access token to be used to access secured resources.
+        token (str, optional): The Portal access token to be used to access secured resources.
             If not provided requests to secured resources will fail.
-        culture (str, optional) The culture to use for localization.
-        dpi (int) The DPI to use when rendering a map print. Defaults to `96`.
-        use_polling (bool) When `True`, the job service will be polled periodically for results.
-            When `False`, connect to the job service using WebSockets to listen for results.
-            It's recommended to use WebSockets if possible.
-            Defaults to `False`.
+        culture (str, optional): The culture to use for localization.
+        dpi (int, optional): The DPI to use when rendering a map print. Defaults to `96`.
+        use_polling (bool, optional): When `True`, the job service will be polled periodically
+            for results. When `False`, connect to the job service using WebSockets to listen
+            for results. It's recommended to use WebSockets if possible. Defaults to `False`.
         **kwargs: Other parameters to pass to the job.
             These are commonly used to parameterize your template.
 
     Returns:
-        A URL to the report artifact.
+        A string of the URL to the report artifact.
     """
 
     portal_url = portal_url.strip("/")
     portal_item = get_portal_item(item_id, portal_url, token)
     service_url = _get_service_url_from_portal_item(portal_item)
 
-    reporting_token = _get_reporting_token_if_needed(token, portal_item, service_url, portal_url)
+    reporting_token = _get_reporting_token_if_needed(
+        token, portal_item, service_url, portal_url
+    )
     job_args = _build_job_args(item_id, portal_url, kwargs, culture, dpi)
     ticket = _start_job(service_url, job_args, reporting_token)
 
