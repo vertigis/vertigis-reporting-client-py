@@ -10,6 +10,8 @@ This Python library makes it easy to run [Geocortex Reporting](https://www.geoco
 
 ## Installing the package
 
+This package is published to [PyPi](https://pypi.org/project/geocortex-reporting-client/), and can be installed using `pip`:
+
 ```bash
 pip install geocortex-reporting-client
 ```
