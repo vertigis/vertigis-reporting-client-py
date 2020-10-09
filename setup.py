@@ -12,7 +12,7 @@ from setuptools import setup
 # Package meta-data.
 NAME = "geocortex-reporting-client"
 DESCRIPTION = "A Python client for running Geocortex Reporting jobs."
-URL = "https://github.com/geocortex/geocortex-reporting-client-py"
+URL = "https://github.com/geocortex/vertigis-reporting-client-py"
 EMAIL = "packages@geocortex.com"
 AUTHOR = "VertiGIS"
 REQUIRES_PYTHON = ">=3.6.0"
