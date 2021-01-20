@@ -55,7 +55,7 @@ def _get_reporting_token_if_needed(
 
 
 def _build_job_args(
-    item_id: str, portal_url: str, args: dict, culture: str, dpi: int
+    item_id: str, portal_url: str, args: dict, culture: str, dpi: int, result_name: str
 ) -> dict:
     job_args = {
         "template": {"itemId": item_id, "portalUrl": portal_url},
@@ -78,7 +78,8 @@ def _build_job_args(
         job_args["culture"] = culture
     if dpi:
         job_args["dpi"] = dpi
-
+    if result_name:
+        job_args["template"]["title"] = result_name
     return job_args
 
 
@@ -133,6 +134,7 @@ async def run(
     culture="",
     dpi=0,
     use_polling=False,
+    result_name="",
     **kwargs,
 ):
     """Runs a report job and returns a URL to the report artifact.
@@ -148,6 +150,7 @@ async def run(
         use_polling (bool, optional): When `True`, the job service will be polled periodically
             for results. When `False`, connect to the job service using WebSockets to listen
             for results. It's recommended to use WebSockets if possible. Defaults to `False`.
+        result_name (str, optional): The desired name of the output file.
         **kwargs: Other parameters to pass to the job.
             These are commonly used to parameterize your template.
 
@@ -162,7 +165,7 @@ async def run(
     reporting_token = _get_reporting_token_if_needed(
         token, portal_item, service_url, portal_url
     )
-    job_args = _build_job_args(item_id, portal_url, kwargs, culture, dpi)
+    job_args = _build_job_args(item_id, portal_url, kwargs, culture, dpi, result_name)
     ticket = _start_job(service_url, job_args, reporting_token)
 
     if use_polling:
