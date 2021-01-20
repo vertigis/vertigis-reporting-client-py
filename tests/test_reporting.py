@@ -187,11 +187,11 @@ class TestReporting(aiounittest.AsyncTestCase):
                 },
             )
 
-    async def test_uses_result_name_in_template(self):
+    async def test_uses_result_file_name_in_template(self):
         with responses.RequestsMock() as rsps:
             setup_default_responses(rsps)
 
-            await run(MOCK_PORTAL_ITEM_ID, use_polling=True, result_name="My Report")
+            await run(MOCK_PORTAL_ITEM_ID, use_polling=True, result_file_name="My Report")
 
             job_run_call = next(
                 x
