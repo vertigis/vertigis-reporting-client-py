@@ -187,6 +187,29 @@ class TestReporting(aiounittest.AsyncTestCase):
                 },
             )
 
+    async def test_uses_result_file_name_in_template(self):
+        with responses.RequestsMock() as rsps:
+            setup_default_responses(rsps)
+
+            await run(MOCK_PORTAL_ITEM_ID, use_polling=True, result_file_name="My Report")
+
+            job_run_call = next(
+                x
+                for x in rsps.calls
+                if x.request.url == f"{DEFAULT_REPORTING_URL}/service/job/run"
+            )
+            self.assertEqual(
+                json.loads(job_run_call.request.body),
+                {
+                    "template": {
+                        "itemId": MOCK_PORTAL_ITEM_ID,
+                        "portalUrl": DEFAULT_PORTAL_URL,
+                        "title": "My Report"
+                    },
+                    "parameters": [],
+                },
+            )
+
     async def test_uses_reporting_service_url(self):
         with responses.RequestsMock() as rsps:
             reporting_url = "https://on-prem/reporting"
