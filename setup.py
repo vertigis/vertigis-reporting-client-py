@@ -16,10 +16,10 @@ URL = "https://github.com/geocortex/vertigis-reporting-client-py"
 EMAIL = "packages@geocortex.com"
 AUTHOR = "VertiGIS"
 REQUIRES_PYTHON = ">=3.6.0"
-VERSION = "1.1.0"
+VERSION = "1.1.1"
 
 # What packages are required for this module to be executed?
-REQUIRED = ["requests>=2.24.0,<3", "websockets>=8.1,<9"]
+REQUIRED = ["requests>=2.24.0,<3", "websockets>=9.1,<10"]
 
 # What packages are optional?
 DEV_EXTRAS = ["aiounittest>=1.4.0,<2", "black>=19.10b", "pylint>=2.5.3,<3", "responses>=0.10.16,<0.11"]
