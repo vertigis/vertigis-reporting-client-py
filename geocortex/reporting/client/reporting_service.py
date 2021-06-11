@@ -1,7 +1,7 @@
 import json
 import time
 import requests
-import websockets
+from websockets.client import connect
 
 from .portal_utils import get_portal_item
 
@@ -122,7 +122,7 @@ async def _wait_for_job_result_ws(service_url: str, ticket: str) -> str:
     ws_service_url = service_url.replace("http", "ws")
     artifacts_service_url = f"{ws_service_url}/job/artifacts?ticket={ticket}"
 
-    async with websockets.connect(artifacts_service_url, ssl=True) as websocket:
+    async with connect(artifacts_service_url, ssl=True) as websocket:
         message = await websocket.recv()
         job_status = json.loads(message)
         artifact_url = _check_job_status(service_url, ticket, job_status)
