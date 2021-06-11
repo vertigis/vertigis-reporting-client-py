@@ -54,9 +54,7 @@ def _get_reporting_token_if_needed(
     return ""
 
 
-def _build_job_args(
-    template_arg: dict, args: dict, culture: str, dpi: int
-) -> dict:
+def _build_job_args(template_arg: dict, args: dict, culture: str, dpi: int) -> dict:
     job_args = {
         "template": template_arg,
         "parameters": [],
@@ -81,9 +79,7 @@ def _build_job_args(
     return job_args
 
 
-def _build_template_arg(
-    item_id: str, portal_url: str, result_file_name: str
-) -> dict:
+def _build_template_arg(item_id: str, portal_url: str, result_file_name: str) -> dict:
     template = {"itemId": item_id, "portalUrl": portal_url}
 
     if result_file_name:

@@ -6,7 +6,7 @@ This Python library makes it easy to run [Geocortex Reporting](https://www.geoco
 
 ## Requirements
 
-- Python 3.6 or later
+- Python 3.6.1 or later
 
 ## Installing the package
 
