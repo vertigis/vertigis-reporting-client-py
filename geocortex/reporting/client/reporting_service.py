@@ -34,7 +34,7 @@ def _get_service_url_from_portal_item(portal_item: dict) -> str:
     service_url = portal_item.get("url", "")
     if not service_url:
         # Fall back to the well-know SaaS URL.
-        service_url = "https://apps.geocortex.com/reporting"
+        service_url = "https://apps.vertigisstudio.com/reporting"
 
     # TODO: Do we need to do the fragment stripping as GXWF activity does?
 
