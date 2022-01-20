@@ -2,7 +2,7 @@
 
 ![CI](https://github.com/geocortex/vertigis-reporting-client-py/workflows/CI/badge.svg) ![PyPI](https://img.shields.io/pypi/v/geocortex-reporting-client)
 
-This Python library makes it easy to run [VertiGIS Studio Reporting](https://www.vertigisstudio.com/products/geocortex-reporting/) or [VertiGIS Studio Printing](https://www.vertigisstudio.com/products/geocortex-printing/) jobs.
+This Python library makes it easy to run [VertiGIS Studio Reporting](https://www.vertigisstudio.com/products/vertigis-studio-reporting/) or [VertiGIS Studio Printing](https://www.vertigisstudio.com/products/vertigis-studio-printing/) jobs.
 
 ## Requirements
 
