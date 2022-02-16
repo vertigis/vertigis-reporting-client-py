@@ -15,7 +15,7 @@ MOCK_REPORTING_TOKEN = "mock-reporting-token"
 MOCK_REPORT_TICKET = "mock-report-ticket"
 MOCK_REPORT_TAG = "mock-report-tag"
 
-DEFAULT_REPORTING_URL = "https://apps.geocortex.com/reporting"
+DEFAULT_REPORTING_URL = "https://apps.vertigisstudio.com/reporting"
 DEFAULT_PORTAL_URL = "https://www.arcgis.com"
 
 

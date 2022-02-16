@@ -1,8 +1,8 @@
-# Geocortex Reporting Client for Python
+# VertiGIS Studio Reporting Client for Python
 
 ![CI](https://github.com/geocortex/vertigis-reporting-client-py/workflows/CI/badge.svg) ![PyPI](https://img.shields.io/pypi/v/geocortex-reporting-client)
 
-This Python library makes it easy to run [Geocortex Reporting](https://www.geocortex.com/products/geocortex-reporting/) or [Geocortex Printing](https://www.geocortex.com/products/geocortex-printing/) jobs.
+This Python library makes it easy to run [VertiGIS Studio Reporting](https://www.vertigisstudio.com/products/vertigis-studio-reporting/) or [VertiGIS Studio Printing](https://www.vertigisstudio.com/products/vertigis-studio-printing/) jobs.
 
 ## Requirements
 
@@ -43,4 +43,4 @@ url = await run("itemid", [... other arguments])
 
 ## Documentation
 
-Find [further documentation on the SDK](https://developers.geocortex.com/docs/reporting/sdk-overview/) on the [Geocortex Developer Center](https://developers.geocortex.com/docs/reporting/overview/)
+Find [further documentation on the SDK](https://developers.geocortex.com/docs/reporting/sdk-overview/) on the [VertiGIS Studio Developer Center](https://developers.geocortex.com/docs/reporting/overview/)

@@ -11,7 +11,7 @@ from setuptools import setup
 
 # Package meta-data.
 NAME = "geocortex-reporting-client"
-DESCRIPTION = "A Python client for running Geocortex Reporting jobs."
+DESCRIPTION = "A Python client for running VertiGIS Studio Reporting jobs."
 URL = "https://github.com/geocortex/vertigis-reporting-client-py"
 EMAIL = "packages@geocortex.com"
 AUTHOR = "VertiGIS"
